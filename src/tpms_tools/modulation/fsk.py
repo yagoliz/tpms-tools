@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.ndimage import gaussian_filter1d
 from scipy.io import wavfile
 import matplotlib.pyplot as plt
 
@@ -14,8 +15,8 @@ class FSKModulator:
             bit_duration (float): Duration of each bit in seconds (default 52μs from decoder)
         """
         self.sample_rate = sample_rate
-        self.f_mark = f_mark if f_mark is not None else sample_rate / 4  # Default to Fs/4
-        self.f_space = f_space if f_space is not None else sample_rate / 8  # Default to Fs/8
+        self.f_mark = f_mark if f_mark is not None else sample_rate//4
+        self.f_space = f_space if f_space is not None else sample_rate//8
         self.bit_duration = bit_duration
         self.samples_per_bit = int(sample_rate * bit_duration)
     
@@ -43,10 +44,14 @@ class FSKModulator:
             start_idx = i * self.samples_per_bit
             end_idx = (i + 1) * self.samples_per_bit
             
-            if bit:
-                signal[start_idx:end_idx] = np.sin(2 * np.pi * self.f_mark * t[start_idx:end_idx])
-            else:
-                signal[start_idx:end_idx] = np.sin(2 * np.pi * self.f_space * t[start_idx:end_idx])
+            # Calculate current frequency
+            freq = self.f_mark if bit else self.f_space
+            
+            # Generate time segment for this bit
+            t_segment = t[start_idx:end_idx]
+            
+            # Generate signal with continuous phase
+            signal[start_idx:end_idx] = np.sin(2 * np.pi * freq * t_segment)
         
         return signal
     
@@ -71,7 +76,7 @@ class FSKModulator:
         
         return signal
     
-    def save_wav(self, signal, filename, scale=0.9):
+    def save_wav(self, signal, filename, scale=0.95):
         """
         Save signal to WAV file
         
@@ -80,11 +85,14 @@ class FSKModulator:
             filename (str): Output filename
             scale (float): Scale factor to prevent clipping
         """
-        # Normalize and scale
-        normalized = scale * signal / np.max(np.abs(signal))
-        # Convert to 16-bit integers
-        int16_data = (normalized * 32767).astype(np.int16)
-        wavfile.write(filename, self.sample_rate, int16_data)
+        # Normalize between -1.0 and 1.0 and scale
+        normalized = signal / np.max(np.abs(signal)) * scale
+
+        #  Convert to 32-bit floats
+        normalized = normalized.astype(np.float32)
+
+        # Save wavfile
+        wavfile.write(filename, self.sample_rate, normalized)
     
     def plot_signal(self, signal, duration=None):
         """
@@ -108,7 +116,7 @@ class FSKModulator:
         plt.grid(True)
         plt.show()
 
-def generate_tpms_signal(tpms_bits, f_mark=None, f_space=None):
+def generate_tpms_signal(tpms_bits, sample_rate=250000, f_mark=None, f_space=None):
     """
     Generate complete TPMS signal with FSK modulation
     
@@ -121,7 +129,7 @@ def generate_tpms_signal(tpms_bits, f_mark=None, f_space=None):
         numpy.ndarray: Complete modulated signal
     """
     # Create modulator
-    modulator = FSKModulator(f_mark=f_mark, f_space=f_space)
+    modulator = FSKModulator(sample_rate=sample_rate, f_mark=f_mark, f_space=f_space)
     
     # Generate FSK signal
     signal = modulator.generate_fsk(tpms_bits)

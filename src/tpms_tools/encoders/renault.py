@@ -32,7 +32,7 @@ class RenaultTPMSEncoder(ManchesterTPMSEncoder):
         
         # Create the packet (9 bytes)
         packet = bytearray(9)
-        packet[0] = (flags << 2) | pressure_msb
+        packet[0] = ((flags << 2) & 0xFF) | pressure_msb
         packet[1] = pressure_lsb
         packet[2] = temp_raw
         packet[3] = sensor_id & 0xFF
