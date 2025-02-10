@@ -1,154 +1,76 @@
+from typing import List, Tuple
+
 import numpy as np
-from scipy.ndimage import gaussian_filter1d
-from scipy.io import wavfile
-import matplotlib.pyplot as plt
+
 
 class FSKModulator:
-    def __init__(self, sample_rate=250000, f_mark=None, f_space=None, bit_duration=52e-6):
-        """
-        Initialize FSK modulator
-        
-        Args:
-            sample_rate (int): Sample rate in Hz (default 250kHz as per decoder)
-            f_mark (float): Frequency for mark/1 in Hz
-            f_space (float): Frequency for space/0 in Hz
-            bit_duration (float): Duration of each bit in seconds (default 52μs from decoder)
-        """
+    def __init__(
+        self,
+        mark: float = 35000,
+        space: float = -35000,
+        sample_rate: float = 1000000,
+        symbol_duration: float = 52,
+    ):
+        self.f1 = mark
+        self.f2 = space
         self.sample_rate = sample_rate
-        self.f_mark = f_mark if f_mark is not None else sample_rate//4
-        self.f_space = f_space if f_space is not None else sample_rate//8
-        self.bit_duration = bit_duration
-        self.samples_per_bit = int(sample_rate * bit_duration)
-    
-    def generate_fsk(self, bits):
+        self.symbol_duration = symbol_duration
+
+    def generate_fsk_iq(
+        self, pulse_data: List[Tuple[int, int]], padding: int = 4
+    ) -> np.ndarray:
         """
-        Generate FSK signal for given bit sequence
-        
+        Generate IQ samples from FSK pulse timing data
+
         Args:
-            bits (list): List of bits (0s and 1s)
-            
+            pulse_data: List of tuples (pulse_width, gap_width) in samples
+            sample_rate: Sample rate in Hz
+        t = []
+        signal = []
+
         Returns:
-            numpy.ndarray: FSK modulated signal
+            iq_data: np.ndarray: Complex array of IQ samples
         """
-        # Calculate total number of samples needed
-        total_samples = len(bits) * self.samples_per_bit
-        
-        # Create time array
-        t = np.arange(total_samples) / self.sample_rate
-        
-        # Initialize output signal
-        signal = np.zeros_like(t)
-        
-        # Generate FSK signal
-        for i, bit in enumerate(bits):
-            start_idx = i * self.samples_per_bit
-            end_idx = (i + 1) * self.samples_per_bit
-            
-            # Calculate current frequency
-            freq = self.f_mark if bit else self.f_space
-            
-            # Generate time segment for this bit
-            t_segment = t[start_idx:end_idx]
-            
-            # Generate signal with continuous phase
-            signal[start_idx:end_idx] = np.sin(2 * np.pi * freq * t_segment)
-        
-        return signal
-    
-    def add_ramp(self, signal, ramp_duration=100e-6):
-        """
-        Add ramp up and down to avoid spectral splatter
-        
-        Args:
-            signal (numpy.ndarray): Input signal
-            ramp_duration (float): Duration of ramp in seconds
-            
-        Returns:
-            numpy.ndarray: Signal with ramps applied
-        """
-        ramp_samples = int(ramp_duration * self.sample_rate)
-        ramp_up = np.linspace(0, 1, ramp_samples)
-        ramp_down = np.linspace(1, 0, ramp_samples)
-        
-        # Apply ramps
-        signal[:ramp_samples] *= ramp_up
-        signal[-ramp_samples:] *= ramp_down
-        
-        return signal
-    
-    def save_wav(self, signal, filename, scale=0.95):
-        """
-        Save signal to WAV file
-        
-        Args:
-            signal (numpy.ndarray): Signal to save
-            filename (str): Output filename
-            scale (float): Scale factor to prevent clipping
-        """
-        # Normalize between -1.0 and 1.0 and scale
-        normalized = signal / np.max(np.abs(signal)) * scale
+        # Calculate samples per symbol
+        samples_per_symbol = self.sample_rate * self.symbol_duration * 1e-6
 
-        #  Convert to 32-bit floats
-        normalized = normalized.astype(np.float32)
+        t = []
+        signal = []
 
-        # Save wavfile
-        wavfile.write(filename, self.sample_rate, normalized)
-    
-    def plot_signal(self, signal, duration=None):
-        """
-        Plot a portion of the signal
-        
-        Args:
-            signal (numpy.ndarray): Signal to plot
-            duration (float): Duration in seconds to plot (None for entire signal)
-        """
-        if duration is not None:
-            samples = int(duration * self.sample_rate)
-            signal = signal[:samples]
-        
-        t = np.arange(len(signal)) / self.sample_rate * 1000  # Convert to milliseconds
-        
-        plt.figure(figsize=(15, 5))
-        plt.plot(t, signal)
-        plt.xlabel('Time (ms)')
-        plt.ylabel('Amplitude')
-        plt.title('FSK Signal')
-        plt.grid(True)
-        plt.show()
+        for pulse_width, gap_width in pulse_data:
+            # Generate time points for this pulse-gap pair
+            pulse_t = np.arange(samples_per_symbol * pulse_width) / self.sample_rate
+            gap_t = np.arange(samples_per_symbol * gap_width) / self.sample_rate
+            pulse = np.exp(2j * np.pi * self.f1 * pulse_t)
+            gap = np.exp(2j * np.pi * self.f2 * gap_t)
 
-def generate_tpms_signal(tpms_bits, sample_rate=250000, f_mark=None, f_space=None):
-    """
-    Generate complete TPMS signal with FSK modulation
-    
-    Args:
-        tpms_bits (list): Bits to transmit (including preamble and Manchester encoding)
-        f_mark (float, optional): Mark frequency in Hz
-        f_space (float, optional): Space frequency in Hz
-        
-    Returns:
-        numpy.ndarray: Complete modulated signal
-    """
-    # Create modulator
-    modulator = FSKModulator(sample_rate=sample_rate, f_mark=f_mark, f_space=f_space)
-    
-    # Generate FSK signal
-    signal = modulator.generate_fsk(tpms_bits)
-    
-    # Add ramps to smooth transitions
-    signal = modulator.add_ramp(signal)
-    
-    return signal, modulator
+            # Add to total signal
+            t.extend(pulse_t)
+            t.extend(gap_t)
+            signal.extend(pulse)
+            signal.extend(gap)
 
-# Example usage
-if __name__ == "__main__":
-    # Create sample bits (you would use your encoder's output here)
-    sample_bits = [1, 0, 1, 0, 1, 1, 0, 0] * 4  # Just an example pattern
-    
-    # Generate signal
-    signal, modulator = generate_tpms_signal(sample_bits)
-    
-    # Plot first 1ms of signal
-    modulator.plot_signal(signal, duration=0.001)
-    
-    # Save to WAV file
-    modulator.save_wav(signal, "sample.wav")
+        # Convert lists to arrays
+        t = np.array(t)
+        signal = np.array(signal)
+
+        # Apply raised cosine pulse shaping
+        alpha = 0.35  # Roll-off factor
+        num_taps = 101
+        t_rc = np.arange(-num_taps // 2, num_taps // 2) / self.sample_rate
+        h_rc = (
+            np.sinc(t_rc * self.sample_rate)
+            * np.cos(np.pi * alpha * t_rc * self.sample_rate)
+            / (1 - (2 * alpha * t_rc * self.sample_rate) ** 2)
+        )
+
+        # Filter the signal
+        shaped_signal = np.convolve(signal, h_rc, mode="same")
+
+        # Add 4 seconds of zero signal at the end to allow the signal to decay naturally
+        # and prevent abrupt cut-off which can cause spectral leakage.
+        # Add some seconds of 0 signal at the end to allow for signal to decay
+        signal_end = np.zeros(int(self.sample_rate * padding))
+        shaped_signal = np.concatenate([shaped_signal, signal_end])
+
+        return shaped_signal

@@ -21,9 +21,7 @@ cd tpms_tools
 2. Create and activate a virtual environment using uv:
 ```bash
 uv venv
-source .venv/bin/activate  # On Unix
-# or
-.venv\Scripts\activate  # On Windows
+source .venv/bin/activate 
 ```
 
 3. Install dependencies including development tools:
