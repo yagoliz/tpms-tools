@@ -55,17 +55,18 @@ pytest
 tpms_tools/
 ├── src/
 │   └── tpms_tools/      # Main package
-│       ├── encoders/    # TPMS protocol encoders
+│       ├── encoders/    # Modulation and encoders
+            └── devices/ # TPMS transmitter devices
 │       ├── modulation/  # Signal modulation
-│       └── transmission/# SDR transmission
+│       └── transmission/# SDR transmission (not developed atm)
 ├── tests/              # Test suite
 └── pyproject.toml      # Project configuration
 ```
 
 ### Adding a New TPMS Protocol
 
-1. Create a new encoder in `src/tpms_tools/encoders/`
-2. Subclass `TPMSEncoder` or `ManchesterTPMSEncoder`
+1. Create a new encoder in `src/tpms_tools/encoders/devices`
+2. Subclass `TPMSEncoder`
 3. Implement the required methods
 4. The CLI will automatically detect your new encoder
 
