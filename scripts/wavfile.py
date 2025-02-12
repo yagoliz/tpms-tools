@@ -13,7 +13,9 @@ from tpms_tools.encoders.pcm import PCMEncoder
 
 def get_available_encoders():
     """Dynamically find all available TPMS encoders."""
-    encoder_path = Path(__file__).parent.parent / "src" / "tpms_tools" / "encoders" / "devices"
+    encoder_path = (
+        Path(__file__).parent.parent / "src" / "tpms_tools" / "encoders" / "devices"
+    )
     encoders = {}
 
     for file in encoder_path.glob("*.py"):
@@ -68,6 +70,14 @@ def main():
         "--space", type=int, default=-35000, help="Space frequency in Hz"
     )
 
+    # Filename argument
+    parser.add_argument(
+        "--filename",
+        type=str,
+        default="fsk_signal.wav",
+        help="Output filename",
+    )
+
     args = parser.parse_args()
 
     # Create encoder instance
@@ -94,9 +104,12 @@ def main():
     )
     iq_samples = fsk.generate_fsk_iq(pulse_data, padding=2)
 
+    # Finally saving this to a WAV file
     stereo_data = np.vstack((np.real(iq_samples), np.imag(iq_samples))).T
     wavfile.write(
-        f"example_signals/fsk_signal_example_{encoder.protocol_name.lower()}.wav", args.samplerate, stereo_data.astype(np.float32)
+        args.filename,
+        args.samplerate,
+        stereo_data.astype(np.float32),
     )
 
 

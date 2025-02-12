@@ -91,7 +91,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    file: /Users/ygglc/Git/tpms-tools/example_signals/fsk_signal_example_renault.wav
+    file: ../example_signals/fsk_signal_example_renault.wav
     maxoutbuf: '0'
     minoutbuf: '0'
     nchan: '2'

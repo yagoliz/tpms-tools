@@ -172,7 +172,7 @@ class transmituhd(gr.top_block, Qt.QWidget):
 
         self._qtgui_time_sink_x_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_0_win)
-        self.blocks_wavfile_source_0_0_0 = blocks.wavfile_source('/Users/ygglc/Git/tpms-tools/example_signals/fsk_signal_example_renault.wav', True)
+        self.blocks_wavfile_source_0_0_0 = blocks.wavfile_source('../example_signals/fsk_signal_example_renault.wav', True)
         self.blocks_float_to_complex_0_0 = blocks.float_to_complex(1)
 
 
@@ -182,8 +182,8 @@ class transmituhd(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_float_to_complex_0_0, 0), (self.qtgui_time_sink_x_0_0, 0))
         self.connect((self.blocks_float_to_complex_0_0, 0), (self.qtgui_waterfall_sink_x_0_0, 0))
         self.connect((self.blocks_float_to_complex_0_0, 0), (self.uhd_usrp_sink_0_0, 0))
-        self.connect((self.blocks_wavfile_source_0_0_0, 1), (self.blocks_float_to_complex_0_0, 1))
         self.connect((self.blocks_wavfile_source_0_0_0, 0), (self.blocks_float_to_complex_0_0, 0))
+        self.connect((self.blocks_wavfile_source_0_0_0, 1), (self.blocks_float_to_complex_0_0, 1))
 
 
     def closeEvent(self, event):
