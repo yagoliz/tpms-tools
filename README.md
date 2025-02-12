@@ -56,7 +56,7 @@ tpms_tools/
 ├── src/
 │   └── tpms_tools/      # Main package
 │       ├── encoders/    # Modulation and encoders
-│           └── devices/ # TPMS transmitter devices
+│       │   └── devices/ # TPMS transmitter devices
 │       ├── modulation/  # Signal modulation
 │       └── transmission/# SDR transmission (not developed atm)
 ├── tests/              # Test suite
