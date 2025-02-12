@@ -31,9 +31,9 @@ uv pip install -e ".[dev]"
 
 ### Usage
 
-Transmit a TPMS signal:
+Generate a WAV-file that can then be transmitted:
 ```bash
-tpms-transmit renault --sensor-id 0x123456 --pressure 220 --temperature 25
+python3 scripts/wavfile.py renault --sensor-id 0x123456 --pressure 220 --temperature 25
 ```
 
 ### Development

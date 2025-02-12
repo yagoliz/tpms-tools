@@ -136,6 +136,7 @@ def differential_manchester_decode(bits: str, start: int = 0, max_bits: int = 0)
                 break
         else:
             bit2 = 1 - bit1
+            ipos += 1
             break
     
     # Decode the rest of the bits

@@ -2,13 +2,13 @@ from typing import List
 from ..base import TPMSEncoder
 from ..manchester import differential_manchester_encode
 from ...utils.crc8 import crc8
-from ...utils.bitutils import bytes_to_bits, bitbuffer_invert
+from ...utils.bitutils import bytes_to_bits
 
 
 class ToyotaTPMSEncoder(TPMSEncoder):
     """Encoder for Renault TPMS protocol."""
 
-    PREAMBLE = bytes_to_bits([0xa9, 0x3c])
+    PREAMBLE = bytes_to_bits([0x55, 0x3c])
     BIT_DURATION = 52
     SHORT_WIDTH = 1
     LONG_WIDTH = 1
@@ -71,7 +71,7 @@ class ToyotaTPMSEncoder(TPMSEncoder):
 
         # We do differential Manchester encoding and return the packet
         encoded = differential_manchester_encode(packet_bit_str)
-        return encoded
+        return "01" + encoded # Add the start bit as well
 
     def encode_message(
         self,
@@ -80,7 +80,7 @@ class ToyotaTPMSEncoder(TPMSEncoder):
         temperature_c: int,
         flags: int = None,
     ) -> List[int]:
-        """Create a complete TPMS message including preamble and Manchester encoding."""
+        """Create a complete TPMS message including preamble and differential Manchester encoding."""
 
         # Create the basic packet
         new_packet = {
@@ -90,8 +90,6 @@ class ToyotaTPMSEncoder(TPMSEncoder):
             "temp_c": temperature_c,
         }
 
+        # Let's encode the packet and add the preamble
         encoded = self.create_packet(new_packet)
-
-        # Invert the full message
-        transmitted = bitbuffer_invert(encoded)
-        return self.PREAMBLE + transmitted
+        return self.PREAMBLE + encoded
