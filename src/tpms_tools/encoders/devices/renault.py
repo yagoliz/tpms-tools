@@ -1,4 +1,3 @@
-from typing import List
 from ..base import TPMSEncoder
 from ..manchester import manchester_encode
 from ...utils.crc8 import crc8
@@ -22,7 +21,7 @@ class RenaultTPMSEncoder(TPMSEncoder):
         return 433.92e6  # 433.92 MHz
 
     @property
-    def required_parameters(self) -> List[str]:
+    def required_parameters(self) -> list[str]:
         return ["sensor_id", "pressure_kpa", "temperature_c"]
 
     def create_packet(self, fields: dict) -> str:
@@ -61,7 +60,7 @@ class RenaultTPMSEncoder(TPMSEncoder):
         temperature_c: int,
         flags: int = None,
         extra: int = None,
-    ) -> List[int]:
+    ) -> list[int]:
         """Create a complete TPMS message including preamble and Manchester encoding."""
 
         # Create the basic packet

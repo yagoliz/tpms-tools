@@ -1,6 +1,3 @@
-from typing import Tuple
-
-
 def manchester_encode(data: str) -> str:
     """
     Manchester encodes a bit string. For each input bit:
@@ -24,7 +21,7 @@ def manchester_encode(data: str) -> str:
     return "".join(encoded)
 
 
-def manchester_decode(bits: str, start: int = 0, max_bits: int = 0) -> Tuple[str, int]:
+def manchester_decode(bits: str, start: int = 0, max_bits: int = 0) -> tuple[str, int]:
     """
     Decodes a Manchester-encoded bit string starting from 'start'.
 
@@ -89,7 +86,7 @@ def differential_manchester_encode(data: str) -> str:
     return ''.join(result)
 
 
-def differential_manchester_decode(bits: str, start: int = 0, max_bits: int = 0) -> Tuple[str, int]:
+def differential_manchester_decode(bits: str, start: int = 0, max_bits: int = 0) -> tuple[str, int]:
     """
     Decodes a Differential Manchester-encoded bit string starting from 'start'.
 

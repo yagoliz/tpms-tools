@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, ClassVar
+from typing import ClassVar
 
 
 class TPMSEncoder(ABC):
@@ -18,7 +18,7 @@ class TPMSEncoder(ABC):
         pass
 
     @abstractmethod
-    def encode_message(self, **kwargs) -> List[int]:
+    def encode_message(self, **kwargs) -> list[int]:
         """Create a complete TPMS message including any encoding and preamble.
 
         Returns:
@@ -39,6 +39,6 @@ class TPMSEncoder(ABC):
         pass
 
     @property
-    def required_parameters(self) -> List[str]:
+    def required_parameters(self) -> list[str]:
         """Get the list of required parameters for this encoder."""
         pass

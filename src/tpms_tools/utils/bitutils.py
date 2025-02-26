@@ -1,14 +1,11 @@
-from typing import List
-
-
-def bytes_to_bits(byte_arr: List[int]) -> str:
+def bytes_to_bits(byte_arr: list[int]) -> str:
     """
     Converts a list of integer bytes to a bit string (MSB first for each byte).
     """
     return "".join(format(b, "08b") for b in byte_arr)
 
 
-def bits_to_bytes(bit_str: str) -> List[int]:
+def bits_to_bytes(bit_str: str) -> list[int]:
     """
     Converts a bit string (whose length is a multiple of 8) into a list of integer bytes.
     """

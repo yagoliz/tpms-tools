@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 import numpy as np
 
 
@@ -17,7 +15,7 @@ class FSKModulator:
         self.symbol_duration = symbol_duration
 
     def generate_fsk_iq(
-        self, pulse_data: List[Tuple[int, int]], padding: int = 4
+        self, pulse_data: list[tuple[int, int]], padding: int = 4
     ) -> np.ndarray:
         """
         Generate IQ samples from FSK pulse timing data

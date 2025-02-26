@@ -1,12 +1,9 @@
-from typing import List
-
-
-def crc8(data: List[int], nbytes: int, polynomial: int = 0x07, init: int = 0x00) -> int:
+def crc8(data: list[int], nbytes: int, polynomial: int = 0x07, init: int = 0x00) -> int:
     """
     Calculate CRC-8 checksum of data bytes using polynomial division.
 
     Args:
-        data: List of bytes to calculate CRC for
+        data: list of bytes to calculate CRC for
         nbytes: Number of bytes to process from data
         polynomial: CRC polynomial to use (default: 0x07)
         init: Initial value for CRC calculation (default: 0x00)

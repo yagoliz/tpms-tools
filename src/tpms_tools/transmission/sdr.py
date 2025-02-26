@@ -1,5 +1,5 @@
 import time
-from typing import Optional, Union, List
+from typing import Optional, Union
 import numpy as np
 import SoapySDR
 from SoapySDR import SOAPY_SDR_TX, SOAPY_SDR_CF32
@@ -113,7 +113,7 @@ class SDRTransmitter:
             self.tx_stream = None
 
     def prepare_samples(
-        self, samples: Union[np.ndarray, List[float]], scale: float = 0.8
+        self, samples: Union[np.ndarray, list[float]], scale: float = 0.8
     ) -> np.ndarray:
         """
         Prepare samples for transmission.
@@ -141,7 +141,7 @@ class SDRTransmitter:
 
     def transmit_samples(
         self,
-        samples: Union[np.ndarray, List[float]],
+        samples: Union[np.ndarray, list[float]],
         repeat: int = 1,
         scale: float = 0.8,
         gap_time: float = 0.1,

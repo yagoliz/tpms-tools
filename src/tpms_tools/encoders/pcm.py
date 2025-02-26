@@ -1,12 +1,9 @@
-from typing import List, Tuple
-
-
 class PCMEncoder:
     def __init__(self, short: int = 1, long: int = 1):
         self.short = short
         self.long = long
 
-    def decode_pcm_signal(self, pulses: List[Tuple[int, int]]) -> List[int]:
+    def decode_pcm_signal(self, pulses: list[tuple[int, int]]) -> list[int]:
         decoded_bits = []
 
         for pulse, gap in pulses:
