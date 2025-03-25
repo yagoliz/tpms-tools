@@ -40,3 +40,19 @@ def bitbuffer_invert(bit_str: str) -> str:
         A new string with each bit inverted.
     """
     return "".join("1" if b == "0" else "0" for b in bit_str)
+
+
+def xor_bytes(byte_arr: list[int]) -> int:
+    """
+    Computes the XOR of a list of bytes.
+
+    Args:
+        byte_arr: A list of integers.
+
+    Returns:
+        The XOR of all bytes in the list.
+    """
+    result = 0
+    for b in byte_arr:
+        result ^= b
+    return result
