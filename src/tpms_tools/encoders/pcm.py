@@ -14,7 +14,7 @@ class PCMEncoder:
 
         return decoded_bits
 
-    def encode_pcm_signal(self, bits, s_short=1, s_long=1, verbose=0):
+    def encode_pcm_signal(self, bits: list[int], s_short: int = 1, s_long: int = 1, verbose: bool = False) -> list[tuple[int, int]]:
         """
         Encode with PCM: Given a list of bits (1 and 0),
         produce synthetic pulses and gaps which, if decoded with a similar algorithm,
