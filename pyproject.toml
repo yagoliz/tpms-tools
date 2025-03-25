@@ -13,6 +13,7 @@ dependencies = [
 dev = [
     "black>=25.1.0",
     "pytest>=8.3.4",
+    "requests>=2.32.3",
     "ruff>=0.9.4",
 ]
 
