@@ -186,7 +186,7 @@ def main():
             else:
                 print(f"  Failed to encode test case {i}")
     
-    print(f"\nFuzzing campaign complete!")
+    print("\nFuzzing campaign complete!")
     print(f"Total WAV files generated: {total_generated}")
     print(f"Files saved to: {output_path.absolute()}")
 
