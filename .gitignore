@@ -14,3 +14,17 @@ playground/
 
 # Mac stuff
 .DS_Store
+
+scripts/*.py
+!scripts/wavfile.py
+!scripts/fuzzer.py
+
+# Signals
+.generated/
+
+# Gnuradio
+grc/*
+!grc/uhdtransmit-example.grc
+
+# AI tests
+CLAUDE.md

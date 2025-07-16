@@ -1,83 +1,82 @@
 # TPMS Tools
 
-Tools for encoding and transmitting TPMS (Tire Pressure Monitoring System) signals.
+A Python toolkit for encoding, modulating, and generating TPMS (Tire Pressure Monitoring System) signals for security research and protocol analysis.
 
-## Setup
+## Features
 
-This project uses [uv](https://github.com/astral-sh/uv) for dependency management. Make sure you have uv installed:
+- **Multi-protocol support**: Renault and Mazda/Abarth TPMS protocols
+- **Signal generation**: Create WAV files for RF transmission
+- **Protocol fuzzing**: Built-in fuzzing framework for security testing
+- **Modular architecture**: Extensible encoder system for new protocols
+
+## Quick Start
+
+### Installation
+
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management:
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-### Development Setup
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yagoliz/tpms_tools.git
-cd tpms_tools
-```
-
-2. Create and activate a virtual environment using uv:
-```bash
-uv venv
-source .venv/bin/activate 
-```
-
-3. Install dependencies including development tools:
-```bash
+uv venv && source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
 
-### Usage
+### Generate TPMS Signals
 
-Generate a WAV-file that can then be transmitted:
+Create WAV files for different TPMS protocols:
+
 ```bash
+# Renault TPMS signal
 python3 scripts/wavfile.py renault --sensor-id 0x123456 --pressure 220 --temperature 25
+
+# Mazda/Abarth TPMS signal  
+python3 scripts/wavfile.py mazda --sensor-id 0x123456 --pressure 220 --temperature 25
 ```
 
-### Development
+### Protocol Fuzzing
 
-Format code:
+Run security fuzzing tests:
+
 ```bash
-black src/ tests/
-ruff check src/ tests/ --fix
+python3 scripts/fuzzer.py
 ```
 
-Run tests:
+## Supported Protocols
+
+| Protocol | Frequency | Encoding | Status |
+|----------|-----------|----------|--------|
+| Renault  | 433.92 MHz | Manchester | ✅ Complete |
+| Mazda/Abarth | 433.92 MHz | Manchester | ✅ Complete |
+| Toyota   | 433.92 MHz | Manchester | 🚧 In progress |
+
+## Development
+
+### Code Quality
+
 ```bash
-pytest
+black src/ tests/              # Format code
+ruff check src/ tests/ --fix   # Lint and fix issues
+pytest                         # Run tests
 ```
 
-### Project Structure
+### Architecture
 
-```
-tpms_tools/
-├── src/
-│   └── tpms_tools/      # Main package
-│       ├── encoders/    # Modulation and encoders
-│       │   └── devices/ # TPMS transmitter devices
-│       ├── modulation/  # Signal modulation
-│       └── transmission/# SDR transmission (not developed atm)
-├── tests/              # Test suite
-└── pyproject.toml      # Project configuration
-```
+- **Encoders**: Protocol-specific packet encoding (`src/tpms_tools/encoders/devices/`)
+- **Modulation**: FSK modulation for RF transmission (`src/tpms_tools/modulation/`)
+- **Fuzzing**: Security testing framework (`src/tpms_tools/fuzzing/`)
+- **Utils**: Bit manipulation and CRC utilities (`src/tpms_tools/utils/`)
 
-### Adding a New TPMS Protocol
+### Adding New Protocols
 
-1. Create a new encoder in `src/tpms_tools/encoders/devices`
-2. Subclass `TPMSEncoder`
-3. Implement the required methods
-4. The CLI will automatically detect your new encoder
+1. Create encoder in `src/tpms_tools/encoders/devices/`
+2. Subclass `TPMSEncoder` and implement required methods
+3. The CLI tools will automatically detect your new protocol
 
-Example:
-```python
-from tpms_tools.encoders.base import TPMSEncoder
+## Security Research
 
-class MyTPMSEncoder(TPMSEncoder):
-    @property
-    def protocol_name(self) -> str:
-        return "MyProtocol"
-    
-    # Implement other required methods
-```
+This toolkit is designed for:
+- TPMS protocol analysis and reverse engineering
+- Security vulnerability research
+- Educational purposes
+
+**Important**: This tool is for defensive security research only. Use responsibly and in accordance with applicable laws.

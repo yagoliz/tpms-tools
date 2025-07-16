@@ -91,7 +91,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    file: /Users/ygglc/Work/Projects/TPMS/Git/tpms-tools/grc/pressure_ddos_1.wav
+    file: ../example_signals/fsk_signal_example_renault.wav
     maxoutbuf: '0'
     minoutbuf: '0'
     nchan: '2'
