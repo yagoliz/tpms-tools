@@ -12,6 +12,7 @@ class FuzzStrategy(Enum):
     PROTOCOL_AWARE = "protocol_aware"
     MUTATION_BASED = "mutation_based"
     EDGE_CASES = "edge_cases"
+    PACKET_LENGTH_FUZZING = "packet_length"
 
 
 @dataclass

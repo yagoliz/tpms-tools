@@ -16,6 +16,7 @@ playground/
 .DS_Store
 
 scripts/*.py
+scripts/*.sh
 !scripts/wavfile.py
 !scripts/fuzzer.py
 
