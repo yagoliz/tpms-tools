@@ -28,3 +28,6 @@ grc/*
 
 # AI tests
 CLAUDE.md
+
+# Debugging
+.vscode
