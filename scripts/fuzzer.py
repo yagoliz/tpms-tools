@@ -2,13 +2,12 @@
 
 import argparse
 import importlib
-import os
 from pathlib import Path
 
 import numpy as np
 from scipy.io import wavfile
 
-from tpms_tools.fuzzing.base_fuzzer import FuzzStrategy, TPMSFuzzer
+from tpms_tools.fuzzing.base_fuzzer import FuzzStrategy
 from tpms_tools.fuzzing.renault_fuzzer import RenaultTPMSFuzzer
 from tpms_tools.modulation.fsk import FSKModulator
 from tpms_tools.encoders.pcm import PCMEncoder
@@ -44,40 +43,6 @@ def get_available_fuzzers():
     return {
         "renault": RenaultTPMSFuzzer
     }
-
-
-def create_generic_fuzzer(encoder_class, target_sensor_ids=None):
-    """Create a generic fuzzer for any encoder that doesn't have a specific fuzzer."""
-    
-    class GenericTPMSFuzzer(TPMSFuzzer):
-        def __init__(self, target_sensor_ids=None):
-            super().__init__(encoder_class, target_sensor_ids)
-            self.encoder_instance = encoder_class()
-            
-        def generate_test_cases(self, strategy, count):
-            """Generate basic test cases for any encoder."""
-            required_params = self.encoder_instance.required_parameters
-            
-            for i in range(count):
-                test_case = {}
-                
-                # Generate basic values for required parameters
-                for param in required_params:
-                    if param == "sensor_id":
-                        if self.target_sensor_ids:
-                            test_case[param] = self.target_sensor_ids[i % len(self.target_sensor_ids)]
-                        else:
-                            test_case[param] = 0x123456 + i
-                    elif param == "pressure_kpa":
-                        test_case[param] = 200.0 + (i % 100)
-                    elif param == "temperature_c":
-                        test_case[param] = 20 + (i % 40)
-                    else:
-                        test_case[param] = i % 256
-                
-                yield test_case
-    
-    return GenericTPMSFuzzer(target_sensor_ids)
 
 
 def main():
@@ -117,11 +82,12 @@ def main():
     parser.add_argument("--space", type=int, default=-35000, help="Space frequency in Hz")
     
     # Strategy control
-    parser.add_argument("--boundary-count", type=int, default=10, help="Number of boundary value test cases")
-    parser.add_argument("--random-count", type=int, default=20, help="Number of random semantic test cases")
-    parser.add_argument("--protocol-count", type=int, default=15, help="Number of protocol-aware test cases")
-    parser.add_argument("--mutation-count", type=int, default=15, help="Number of mutation-based test cases")
-    parser.add_argument("--edge-count", type=int, default=10, help="Number of edge case test cases")
+    parser.add_argument("--boundary-count", type=int, default=0, help="Number of boundary value test cases")
+    parser.add_argument("--random-count", type=int, default=0, help="Number of random semantic test cases")
+    parser.add_argument("--protocol-count", type=int, default=0, help="Number of protocol-aware test cases")
+    parser.add_argument("--mutation-count", type=int, default=0, help="Number of mutation-based test cases")
+    parser.add_argument("--edge-count", type=int, default=0, help="Number of edge case test cases")
+    parser.add_argument("--length-count", type=int, default=0, help="Number of packet length fuzzing test cases")
     
     args = parser.parse_args()
     
@@ -141,7 +107,8 @@ def main():
     if args.protocol.lower() in fuzzers:
         fuzzer = fuzzers[args.protocol.lower()](target_sensor_ids=args.target_sensors)
     else:
-        fuzzer = create_generic_fuzzer(encoder_class, target_sensor_ids=args.target_sensors)
+        print(f"Error: No fuzzer available for protocol '{args.protocol}'. Available protocols: {list(fuzzers.keys())}")
+        return  # Stop execution if no fuzzer is available
     
     # Run different fuzzing strategies
     strategies = [
@@ -150,6 +117,7 @@ def main():
         (FuzzStrategy.PROTOCOL_AWARE, args.protocol_count),
         (FuzzStrategy.MUTATION_BASED, args.mutation_count),
         (FuzzStrategy.EDGE_CASES, args.edge_count),
+        (FuzzStrategy.PACKET_LENGTH_FUZZING, args.length_count),
     ]
     
     total_generated = 0
@@ -161,7 +129,7 @@ def main():
         # Generate WAV files for each result
         for i, result in enumerate(results):
             if result.encoded_bits is not None:
-                filename = f"{args.protocol}_{strategy.value}_{i:03d}_sensor_{result.test_case['sensor_id']:06x}.wav"
+                filename = generate_filename(args.protocol, strategy, i, result, args)
                 filepath = output_path / filename
                 
                 # Generate WAV file
@@ -183,12 +151,62 @@ def main():
                 print(f"    Temperature: {result.test_case['temperature_c']}°C")
                 print(f"    Flags: {result.test_case.get('flags', 'N/A')}")
                 print(f"    Extra: {result.test_case.get('extra', 'N/A')}")
+                
+                # Print packet length info if available
+                if result.packet_info:
+                    print(f"    Packet Length: {result.packet_info.get('length', 'N/A')} bits")
+                    print(f"    Duration: {result.packet_info.get('duration', 'N/A')} ms")
+                
+                # Print packet length fuzzing details if present
+                if 'target_length' in result.test_case:
+                    print(f"    Target Length: {result.test_case['target_length']} bits")
+                    print(f"    Padding Method: {result.test_case.get('padding_method', 'N/A')}")
             else:
-                print(f"  Failed to encode test case {i}")
+                error_msg = result.error if result.error else "Unknown encoding error"
+                print(f"  Failed to encode test case {i}: {error_msg}")
     
     print("\nFuzzing campaign complete!")
     print(f"Total WAV files generated: {total_generated}")
     print(f"Files saved to: {output_path.absolute()}")
+
+
+def generate_filename(protocol, strategy, index, result, args):
+    """Generate a descriptive filename for the WAV file."""
+    test_case = result.test_case
+    
+    # Base filename components
+    filename_parts = [
+        protocol,
+        strategy.value,
+        f"{index:03d}",
+        f"sensor_{test_case['sensor_id']:06x}",
+        f"p{test_case['pressure_kpa']:.0f}kpa",
+        f"t{test_case['temperature_c']}c"
+    ]
+    
+    # Add packet length info if available
+    if result.packet_info:
+        length = result.packet_info.get('length')
+        if length:
+            filename_parts.append(f"len{length}b")
+    
+    # Add packet length fuzzing details
+    if 'target_length' in test_case:
+        filename_parts.append(f"target{test_case['target_length']}b")
+        if 'padding_method' in test_case:
+            filename_parts.append(f"pad{test_case['padding_method']}")
+    
+    # Add flags and extra if they're non-default
+    if test_case.get('flags') is not None:
+        filename_parts.append(f"flags{test_case['flags']:02x}")
+    
+    if test_case.get('extra') is not None:
+        filename_parts.append(f"extra{test_case['extra']:04x}")
+    
+    # Add frequency info
+    filename_parts.append(f"freq{args.frequency/1e6:.2f}mhz")
+    
+    return "_".join(filename_parts) + ".wav"
 
 
 def generate_wav_file(tpms_bits, filepath, sample_rate, mark, space, bit_duration):

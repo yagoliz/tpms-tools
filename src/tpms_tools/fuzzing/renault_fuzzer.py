@@ -198,6 +198,91 @@ class RenaultTPMSFuzzer(TPMSFuzzer):
         for case in edge_cases[:count]:
             yield case
     
+    def generate_packet_length_fuzzing(self, count: int) -> Iterator[Dict[str, Any]]:
+        """Generate test cases focused on packet length fuzzing."""
+        test_cases = []
+        
+        # Standard packet lengths to test
+        all_lengths = [1024, 4096, 8192, 16384, 32768, 1048576]
+        
+        # Generate test cases for each length
+        for target_length in all_lengths[:count]:
+            # Test with different padding methods
+            # padding_methods = ["repeat", "zero", "random", "custom"]
+            padding_methods = ["random"]
+            padding_method = random.choice(padding_methods)
+            
+            # Create custom padding data for "custom" method
+            padding_data = None
+            if padding_method == "custom":
+                padding_data = [random.randint(0, 255) for _ in range(random.randint(1, 16))]
+            
+            test_case = {
+                'sensor_id': self._get_sensor_id(),
+                'pressure_kpa': random.uniform(*self.valid_ranges['pressure_kpa']),
+                'temperature_c': random.randint(*self.valid_ranges['temperature_c']),
+                'flags': random.randint(*self.valid_ranges['flags']),
+                'extra': random.randint(*self.valid_ranges['extra']),
+                'target_length': target_length,
+                'padding_method': padding_method,
+            }
+            
+            if padding_data:
+                test_case['padding_data'] = padding_data
+            
+            test_cases.append(test_case)
+        
+        # Add some edge cases specific to packet length fuzzing
+        edge_length_cases = [
+            # Very small packets (minimum size)
+            {
+                'sensor_id': self._get_sensor_id(),
+                'pressure_kpa': 220.0,
+                'temperature_c': 25,
+                'flags': 54,
+                'extra': random.randint(*self.valid_ranges['extra']),
+                'target_length': 9,
+                'padding_method': "repeat",
+            },
+            # Very large packets (stress test)
+            {
+                'sensor_id': self._get_sensor_id(),
+                'pressure_kpa': 220.0,
+                'temperature_c': 25,
+                'flags': 54,
+                'extra': random.randint(*self.valid_ranges['extra']),
+                'target_length': 4096,
+                'padding_method': "zero",
+            },
+            # Test different padding patterns
+            {
+                'sensor_id': self._get_sensor_id(),
+                'pressure_kpa': 220.0,
+                'temperature_c': 25,
+                'flags': 54,
+                'extra': random.randint(*self.valid_ranges['extra']),
+                'target_length': 100,
+                'padding_method': "custom",
+                'padding_data': [0xFF, 0x00, 0xAA, 0x55],  # Alternating pattern
+            },
+            # Test with duration-based calculation
+            {
+                'sensor_id': self._get_sensor_id(),
+                'pressure_kpa': 220.0,
+                'temperature_c': 25,
+                'flags': 54,
+                'extra': random.randint(*self.valid_ranges['extra']),
+                'target_length': self.encoder.calculate_target_length_for_duration(50.0),  # 5ms
+                'padding_method': "repeat",
+            }
+        ]
+        
+        # Add edge cases to the beginning
+        test_cases = edge_length_cases + test_cases
+        
+        for case in test_cases[:count]:
+            yield case
+    
     def generate_test_cases(self, strategy: FuzzStrategy, count: int) -> Iterator[Dict[str, Any]]:
         """Generate test cases based on the specified strategy."""
         strategy_map = {
@@ -206,6 +291,7 @@ class RenaultTPMSFuzzer(TPMSFuzzer):
             FuzzStrategy.PROTOCOL_AWARE: self.generate_protocol_aware,
             FuzzStrategy.MUTATION_BASED: self.generate_mutation_based,
             FuzzStrategy.EDGE_CASES: self.generate_edge_cases,
+            FuzzStrategy.PACKET_LENGTH_FUZZING: self.generate_packet_length_fuzzing,
         }
         
         return strategy_map[strategy](count)
