@@ -3,6 +3,7 @@ from typing import Optional, Union
 import numpy as np
 import SoapySDR
 from SoapySDR import SOAPY_SDR_TX, SOAPY_SDR_CF32
+from .base import BaseTransmitter
 
 
 class SDRTransmitterError(Exception):
@@ -23,7 +24,7 @@ class SDRConfigError(SDRTransmitterError):
     pass
 
 
-class SDRTransmitter:
+class SDRTransmitter(BaseTransmitter):
     """Class for transmitting signals using SoapySDR-compatible devices."""
 
     def __init__(

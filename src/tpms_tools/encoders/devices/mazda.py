@@ -77,3 +77,10 @@ class MazdaTPMSEncoder(TPMSEncoder):
         # Invert the full message
         transmitted = bitbuffer_invert(encoded)
         return self.PREAMBLE + transmitted
+    
+
+    def pulse_encode_message(
+        self,
+        tpms_bits: list[int]
+    ) -> list[tuple[int, int]]:
+        return self.pcm.encode_pcm_signal([int(b) for b in tpms_bits])

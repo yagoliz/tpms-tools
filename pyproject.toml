@@ -3,7 +3,7 @@ name = "tpms-tools"
 version = "0.1.0"
 description = "Tools for encoding TPMS signals as a way to analyze these protocols further"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "numpy>=2.2.2",
     "pyqt5>=5.15.11",

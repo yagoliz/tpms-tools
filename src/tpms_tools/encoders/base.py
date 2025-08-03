@@ -26,6 +26,15 @@ class TPMSEncoder(ABC):
         """
         pass
 
+    @abstractmethod
+    def pulse_encode_message(self, **kwargs) -> list[tuple[int, int]]:
+        """Create the pulse encoding (PCM, PPM) before PHY modulation
+
+        Returns:
+            List[Tuple(int, int)]: Tuple with long/short pulses
+        """
+        pass
+
     @property
     @abstractmethod
     def protocol_name(self) -> str:

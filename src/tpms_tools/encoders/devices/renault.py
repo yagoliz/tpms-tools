@@ -1,5 +1,6 @@
 from ..base import TPMSEncoder
 from ..manchester import manchester_encode
+from ..pcm import PCMEncoder
 from ...utils.crc8 import crc8
 from ...utils.bitutils import bytes_to_bits, bitbuffer_invert
 
@@ -11,6 +12,8 @@ class RenaultTPMSEncoder(TPMSEncoder):
     BIT_DURATION = 52
     SHORT_WIDTH = 1
     LONG_WIDTH = 1
+
+    pcm = PCMEncoder(short=1, long=1)
 
     @property
     def protocol_name(self) -> str:
@@ -79,6 +82,12 @@ class RenaultTPMSEncoder(TPMSEncoder):
         full_message = self.PREAMBLE + transmitted
         # Convert to list of integers for consistency
         return [int(bit) for bit in full_message]
+    
+    def pulse_encode_message(
+        self,
+        tpms_bits: list[int]
+    ) -> list[tuple[int, int]]:
+        return self.pcm.encode_pcm_signal([int(b) for b in tpms_bits])
     
     def encode_message_with_length(
         self,

@@ -92,3 +92,9 @@ class ToyotaTPMSEncoder(TPMSEncoder):
         # Let's encode the packet and add the preamble
         encoded = self.create_packet(new_packet)
         return self.PREAMBLE + encoded
+
+    def pulse_encode_message(
+        self,
+        tpms_bits: list[int]
+    ) -> list[tuple[int, int]]:
+        return self.pcm.encode_pcm_signal([int(b) for b in tpms_bits])
