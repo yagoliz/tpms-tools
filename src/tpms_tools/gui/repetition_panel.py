@@ -51,7 +51,7 @@ class RepetitionPanel(QGroupBox):
         # Interval between transmissions
         self.interval_spin = QDoubleSpinBox()
         self.interval_spin.setRange(0.1, 3600.0)  # 0.1 second to 1 hour
-        self.interval_spin.setValue(1.0)
+        self.interval_spin.setValue(5.0)
         self.interval_spin.setSuffix(" sec")
         self.interval_spin.setDecimals(1)
         timing_form.addRow("Interval:", self.interval_spin)

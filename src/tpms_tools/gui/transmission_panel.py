@@ -30,11 +30,11 @@ class TransmissionPanel(QGroupBox):
         self.uhd_radio = QRadioButton("UHD/USRP")
         self.soapy_radio = QRadioButton("SoapySDR")
         
-        type_group.addButton(self.soapy_radio)
         type_group.addButton(self.uhd_radio)
+        type_group.addButton(self.soapy_radio)
         
-        type_layout.addWidget(self.soapy_radio)
         type_layout.addWidget(self.uhd_radio)
+        type_layout.addWidget(self.soapy_radio)
         type_layout.addStretch()
         
         layout.addLayout(type_layout)
@@ -116,10 +116,10 @@ class TransmissionPanel(QGroupBox):
     def _set_defaults(self):
         """Set default values."""
         # Select first available transmitter type
-        if "soapy" in self.available_types:
-            self.soapy_radio.setChecked(True)
-        elif "uhd" in self.available_types:
+        if "uhd" in self.available_types:
             self.uhd_radio.setChecked(True)
+        elif "soapy" in self.available_types:
+            self.soapy_radio.setChecked(True)
         
         # Set common device args based on type
         self._update_device_args_placeholder()
