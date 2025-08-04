@@ -93,10 +93,7 @@ class UHDTransmitter(BaseTransmitter):
         if self.tx_streamer is None:
             return
         
-        try:
-            self.tx_streamer.send(np.array([], dtype=np.complex64), uhd.types.TXMetadata())
-        finally:
-            self.tx_streamer = None
+        self.tx_streamer = None
 
     def prepare_samples(
         self, samples: Union[np.ndarray, list[float]], scale: float = 0.8
