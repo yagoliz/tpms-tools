@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
     QGroupBox, QPushButton, QTextEdit, QSplitter
@@ -209,8 +210,8 @@ class TPMSMainWindow(QMainWindow):
             
             # Create FSK modulated samples
             modulator = FSKModulator(
-                mark=35000,
-                space=-35000,
+                mark=25000,
+                space=-25000,
                 sample_rate=transmitter_config['sample_rate'],
                 symbol_duration=encoder.BIT_DURATION,
             )
@@ -240,6 +241,10 @@ class TPMSMainWindow(QMainWindow):
                 )
                 self.current_transmitter_config = transmitter_config.copy()
                 self.log(f"Initialized {transmitter_config['type'].upper()} transmitter")
+
+            # Pad samples with 0.5 seconds of data
+            pad = int(0.2 * transmitter_config['sample_rate'])
+            iq_samples = np.pad(iq_samples, (pad, pad), constant_values=0.0)
             
             # Transmit using existing transmitter (no context manager)
             self.current_transmitter.transmit_samples(
